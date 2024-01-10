@@ -4,7 +4,9 @@ from supported import SupportedProperty
 
 
 class EcParser:
-  def parse(self, _path: str) -> dict[str, list[tuple[SupportedProperty, str | int | bool]]]:
+  def __init__(self) -> None: ...
+
+  def parse_ec_file(self, _path: str) -> dict[str, list[tuple[SupportedProperty, str | int | bool]]]:
     # ex. [("indent_size", 2), ("indent_style", "tab")]
     ruleset_dict: dict[str, list[tuple[SupportedProperty, str | int | bool]]] = {}
 
@@ -14,9 +16,8 @@ class EcParser:
       cur_value = StringIO()
       eq_hit = False
       current_ruleset = ''
-      lines = ec.readlines()
 
-      for linenum, ogline in enumerate(lines):
+      for ogline in ec.readlines():
         line = ogline.strip()
 
         if len(line) < 1 or line[0] == '#': continue  # Avoid index error.
@@ -51,5 +52,38 @@ class EcParser:
           clear_strios(cur_property, cur_value)
           eq_hit = False
 
-    print(ruleset_dict)
     return ruleset_dict
+
+  def parse_ec_pattern(self, _pattern: str) -> str | list[str]:
+    """
+    Parses the search pattern.
+
+    `*{.c}` -> `*.c` (`str`)
+
+    `*{.hx,Makefile}` -> `[*.hx, *Makefile]` (`list[str]`)
+    """
+
+    asterisk = False
+    newpattern = StringIO()
+    curpattern = StringIO()
+    patterns: list[str] = []
+
+    if ',' in _pattern:
+      for c in _pattern:
+        if c == '*': asterisk = True
+        elif c == ',':
+          patterns.append(curpattern.getvalue())
+          curpattern.seek(0)
+          curpattern.truncate(0)
+
+        elif c not in '{}': curpattern.write(c)
+
+      if len(curpattern.getvalue()) > 0: patterns.append(curpattern.getvalue())
+      return patterns
+
+    else:
+      for c in _pattern:
+        # if c == '*': asterisk = True
+        if not c in '{}': newpattern.write(c)
+
+      return newpattern.getvalue()

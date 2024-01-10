@@ -10,10 +10,20 @@ indent_size = 2
 insert_final_newline = true
 trim_trailing_whitespace = true
 
-[*{.c}]
-tab_width = 4
+# Single lang.
+[*.c]
 indent_size = 4
 
-# For languages that uses tabs instead of spaces.
-[*{.hx,Makefile}]
+# Multiple langs.
+[*{.hx,.java}]
 indent_style = tab
+
+# Single specific file.
+[Makefile]
+indent_style = tab
+tab_width = 4
+
+# Multiple specific files.
+[{package.json,.travis.yml}]
+indent_style = tab
+tab_width = 2
